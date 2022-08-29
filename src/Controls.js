@@ -12,7 +12,7 @@ const Controls = (props) => {
   const [moveRight, setMoveRight] = useState(false);
 
   useFrame(() => {
-    const velocity = 0.05;
+    const velocity = 0.1;
     if (moveForward || moveBackward) {
       controlsRef.current.moveForward((Number(moveForward) - Number(moveBackward)) * velocity);
     } else if (moveLeft || moveRight) {

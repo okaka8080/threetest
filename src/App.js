@@ -7,7 +7,7 @@ import Controls from "./Controls";
 import Player from "./Player";
 import { MathUtils } from 'three'
 import * as THREE from "three"
-import { Instances, Instance, Environment, ContactShadows } from '@react-three/drei'
+import { Instances, Instance, Environment, ContactShadows , Plane} from '@react-three/drei'
 import { EffectComposer, SSAO } from '@react-three/postprocessing'
 import niceColors from "nice-color-palettes"
 import Grass from "./Grass"
@@ -16,8 +16,11 @@ const tempColor = new THREE.Color()
 const data = Array.from({ length: 1000 }, () => ({ color: niceColors[Math.floor(Math.random() * 100)][Math.floor(Math.random() * 5)], scale: 1 }))
 
 
-function Plane(props) {
-  const [ref] = usePlane(() => ({ rotation: [-Math.PI / 2, 0, 0], ...props }));
+function Field(props) {
+  const [ref] = usePlane(() => ({ 
+    rotation: [-Math.PI / 2, 0, 0],
+    position: [0 , -18, 0],
+     ...props }));
   return (
     <mesh ref={ref} receiveShadow>
       <planeBufferGeometry attach="geometry" args={[1009, 1000]} />
@@ -26,29 +29,30 @@ function Plane(props) {
   );
 }
 
-function Sphere(props) {
-  const [ref] = useSphere(() => ({
+
+function Cube(props) {
+  const [ref] = useBox(() => ({
     mass: 1,
     position: [0, 5, 0],
     rotation: [0.4, 0.2, 0.5],
     ...props
   }));
-
   const color = props.color ? props.color : "hotpink";
   return (
     <mesh receiveShadow castShadow ref={ref}>
-      <sphereBufferGeometry/>
+      <boxBufferGeometry args={[2,2,2]} />
       <meshLambertMaterial attach="material" color={color} />
     </mesh>
   );
 }
+
 //test
-const particles = Array.from({ length: 150 }, () => ({
-  factor: MathUtils.randInt(20, 100),
+const particles = Array.from({ length: 100 }, () => ({
+  factor: MathUtils.randInt(25, 70),
   speed: MathUtils.randFloat(0.01, 1),
-  xFactor: MathUtils.randFloatSpread(80),
+  xFactor: MathUtils.randFloatSpread(120),
   yFactor: MathUtils.randFloatSpread(40),
-  zFactor: MathUtils.randFloatSpread(40),
+  zFactor: MathUtils.randFloatSpread(70),
 }))
 
 function Bubbles() {
@@ -92,38 +96,41 @@ function Bubble({ factor, speed, xFactor, yFactor, zFactor }) {
 function App() {
   return (
     <Canvas
+    colorManagement
     shadowMap
-    sRGB
-      gl={{ antialias: false }}
-      camera={{ position: [-1, 1, 5], fov: 50 }}
+      gl={{ alpha: false, antialias: false }} 
+      camera={{ position: [-1, -18, 5], fov: 50 }}
     >
-      <color attach="background" args={["#f0f0f0"]} />
-      <fog attach="fog" args={['white', 60, 110]} />
-      <ambientLight intensity={1} />
-      <pointLight position={[100, 10, -50]} intensity={1} castShadow />
-      <pointLight position={[-100, -100, -100]} intensity={1} color="red" />
+      <color attach="background" args={["lavenderblush"]} />
+      <fog attach="fog" args={['0x000000', 50, 2000]} />
+      {/* <ambientLight intensity={1} />
+      <pointLight position={[100, 10, -50]} intensity={0.5} castShadow />
+      <pointLight position={[-100, -100, -100]} intensity={0.5}  /> */}
       <Bubbles />
-      <ContactShadows position={[0, -30, 0]} opacity={0.6} scale={130} blur={1} far={40} />
+      {/* <ContactShadows position={[0, -20, 0]} opacity={0.6} scale={130} blur={1} far={40} /> */}
       <EffectComposer multisampling={0}>
-        <SSAO samples={31} radius={0.1} intensity={30} luminanceInfluence={0.1} color="red" />
+        <SSAO samples={31} radius={0.1} intensity={30} luminanceInfluence={0.1}  />
       </EffectComposer>
       <Suspense fallback={null}>
         <Environment preset="city" />
       </Suspense>
       <Physics>
         <Controls />
-        <hemisphereLight intensity={0.35} />
+        <hemisphereLight intensity={0.35} position = {[0,-100,0]}/>
         <spotLight
-          position={[10, 10, 10]}
+          position={[10, -100, 10]}
           angle={0.3}
           penumbra={1}
           intensity={2}
           castShadow
         />
-        <Plane />
-        <Sphere geometry={[0.1, 0.1, 0.1]}/>
-        <Sphere position={[0, 10, -2]} color="rebeccapurple" />
-        <Sphere position={[0, 20, -2]} color="darkseagreen" />
+        <Field/>
+        <Plane position={[0, -21, 0]} rotation={[-Math.PI / 2, 0, 0]} args={[1009, 1000]} receiveShadow>
+                <meshStandardMaterial color="lightgreen" side={THREE.DoubleSide} />
+        </Plane>
+        <Cube geometry={[0.1, 0.1, 0.1]}/>
+        <Cube position={[0, 10, -2]} color="rebeccapurple" />
+        <Cube position={[0, 20, -2]} color="darkseagreen" />
       </Physics>
     </Canvas>
   );
